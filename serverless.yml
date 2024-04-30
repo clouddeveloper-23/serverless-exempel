@@ -1,0 +1,41 @@
+service: todo-app
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  profile: sls
+  region: eu-north-1
+  stage: dev
+
+package:
+  individually: true
+
+functions:
+  listTodos:
+    handler: functions/todo/list.handler
+    name: list-todos-${sls:stage}
+    description: Returns a list of todos
+    role: arn:aws:iam::649210169554:role/lambdaNinja
+    events:
+      - httpApi:
+          path: /todos
+          method: get
+
+resources:
+  Resources:
+    todosDb:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: todosTable
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        BillingMode: "PAY_PER_REQUEST"
